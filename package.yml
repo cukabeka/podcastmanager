@@ -1,0 +1,37 @@
+# Alle hier gesetzten Werte können über $addon->getProperty($key) abgefragt werden
+
+package: podcastmanager 
+version: '1.0.0'
+author: Friends Of REDAXO 
+supportpage: https://github.com/FriendsOfREDAXO/podcastmanager/
+
+page:
+    title: 'Podcast Manager'
+    perm: podcastmanager[]
+    icon: rex-icon fa-headphones
+    subpages:
+        main:
+            title: 'translate:main'
+            icon: rex-icon fa-headphones
+            subPath: lib/data_edit.php
+            yformTable: rex_podcastmanager
+            yformClass: podcastmanager-yform
+            yformTitle: false
+        categories: { title: 'translate:categories', icon: rex-icon fa-tags }
+        settings: { perm: 'podcastmanagersettings[]', title: 'translate:settings', icon: rex-icon fa-wrench }
+        stats:
+            title: 'translate:stats'
+            icon: rex-icon fa-line-chart
+            subPath: lib/data_edit.php
+            yformTable: rex_podcastmanager_stats
+            yformClass: podcastmanager-yform
+            yformTitle: false
+
+requires:
+    redaxo: '>=5.4' # benötigt mindestens REDAXO 5.4
+    packages:
+        yrewrite: '>=1' # setzt yrewrite voraus
+        #url: ^1.0.0-beta5 # benötigt Addon Url
+        yform: '>=2.2' # setzt yform ab v 2.2 voraus
+    php:
+        version: '>=5.6' # benötigt mindestens PHP 5.6

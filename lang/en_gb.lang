@@ -1,0 +1,54 @@
+news_title = News Manager
+
+news_main = Hauptseite
+news_main_title = News-Addon Titel Hauptseite
+news_main_content = Inhalt News-Addon-Seite
+
+news_config = Einstellungen
+news_config_legend1 = Einfache Felder
+news_config_url = URL
+news_config_checkbox = Checkbox
+news_config_select = Select
+news_config_multiselect = Multiselect
+
+news_config_legend2 = Medienpool, Linkmap usw.
+news_config_file = Datei
+news_config_article = Artikel
+news_config_categories = Kategorienauswahl
+news_config_pageids = Seitenauswahl
+
+news_config_save = Einstellungen speichern
+news_config_saved = Einstellungen wurden gespeichert!
+
+
+feed_title = Titel des Podcasts
+feed_title_help = Titel ist der Titel des Podcasts und präsentiert den Podcast in Verzeichnissen, Listen etc.
+feed_subtitle = Untertitel
+feed_subtitle_help = Der Untertitel ist eine Erweiterung des Titels. Der Untertitel soll erklären, worum es in diesem Podcast geht. Während der Titel irgendetwas sein kann, sollte der Untertitel beschreiben, was der tatsächliche Inhalt ist, und welches die wichtigsten Informationen sind, die jeder über dieses Angebot haben möchte. Eine Zusammenfassung ist eine präzise und durchdachte Beschreibung der Podcast-Inhalte.
+feed_description = Beschreibung
+feed_description_help = Während Titel und Untertitel relativ knapp gehalten sind, sollte eine Beschreibung mehrere Sätze enthalten, die einen oder mehrere Absätze bilden.
+feed_link = Podcast Homepage URL
+feed_link_help = 'More info' link for your feed
+feed_license = Lizenz
+feed_license_help = Copyright / license information
+feed_ttl = Zeit in Sekunden
+feed_ttl_help = How often feed feedreaders check for new material (in seconds) -- mostly ignored by feedreaders
+feed_lang = Sprache
+feed_lang_help = Language locale of your feed, eg en-us, de, fr etc. See http://www.rssboard.org/rss-language-codes
+feed_author = Autor
+feed_author_help = Feed author's name
+feed_explicit = Explicit Content
+feed_explicit_help = If your feed contains explicit material or not (yes, no, clean)
+feed_image = Podcast Logo
+feed_image_help = Url of a 170x170 .png image to be used on the iTunes page
+feed_email = Feed Author Mail
+feed_email_help = in the more info section of the feed
+feed_category = Hauptkategorie
+feed_category_help = iTunes major category of your feed
+feed_subcategory = Unterkategorie
+feed_subcategory_help = iTunes minor category of your feed
+
+# Benennung für die Addonrechte, sichtbar innerhalb der REDAXO-Administration unter Benutzer > Rollen > Allgemein
+
+perm_general_news[] = news[] - Rechte für News-Addon
+perm_general_news[config] = news[config] - Rechte für News-Addon-Konfiguration

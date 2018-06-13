@@ -1,0 +1,9 @@
+package: podcastmanager/comments
+version: '1.0.0'
+author: 'Friends Of REDAXO'
+supportpage: https://github.com/FriendsOfREDAXO/podcastmanager/
+
+page:
+    title: 'translate:comments_menu_entry'
+    icon: rex-icon fa-comments-o
+    perm: podcastmanager[]

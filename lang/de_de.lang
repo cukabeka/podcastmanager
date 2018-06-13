@@ -1,0 +1,107 @@
+podcastmanager_title = Podcast Manager
+
+podcastmanager_main = Episode anlegen
+podcastmanager_main_title = Episoden
+
+podcastmanager_categories = Kategorien
+podcastmanager_category = Kategorie
+
+podcastmanager_form_title = Titel
+podcastmanager_form_article_title = Episode
+podcastmanager_form_richtext = Shownotes
+podcastmanager_form_status = Status
+podcastmanager_form_createdate = Datum
+podcastmanager_form_language = Sprache
+podcastmanager_form_seo_description = Meta Description
+podcastmanager_form_seo_canonical = Canonical Link
+podcastmanager_form_category_select = Kategorie
+podcastmanager_form_images = Dateien
+podcastmanager_form_author = Autor
+
+podcastmanager_form_help_richtext = Über den Button "Linie" kann ein Artikelumbruch eingefügt werden, d.h. der Text vor dem Umbruch wird dann in der Listenansicht verwendet.
+podcastmanager_form_help_images = Hier können dem Artikel mehrere Bilder hinzugefügt werden. Dabei wird das erste Bild immer als Teaserbild genommen, alle weiteren bilder werdem im Artikel selbst ausgegeben.
+podcastmanager_form_help_author = Der als Standard gesetzte Autor kann über das <a href="/redaxo/index.php?page=profile">REDAXO Userprofil</a> geändert werden. Zusätzlich können Sie den Autor auch für diesen Artikel über diese Textfeld setzen.
+podcastmanager_form_help_category = Mit dem Select-Feld können Sie den Artikel einer oder mehreren Kategorien zuweisen. Legen Sie weitere Kategorien im <a href="/redaxo/index.php?page=podcastmanager/categories">Kategorienbereich</a> an.
+podcastmanager_form_help_meta_description = Die Meta-Description (und der Seitentitel) werden in den Suchergebnissen von Suchmaschinen ausgegeben und sind die ersten Berührungspunkte Ihrer Webseite mit dem Suchenden. Hier sollten Sie sich bemühen, den Suchenden zum Klick zu animieren. Bitte beachten Sie auch die Empfehlung für die Zeichenanzahl!
+podcastmanager_form_help_seo_canonical = Möchten Sie z.B. einen Artikel auf verschiedenen Webseiten mehrmals im Netz veröffentlichen, müssen alle Duplikate auf den Originalartikel verweisen (duplicate content). Geben Sie hier (sofern Ihr Artikel ein Duplikat ist) den Link zum Original an.
+
+title_config = Podcast Einstellunge
+basic_settings = Podcast Basiseinstellungen
+itunes_settings = Podcast Einstellungen für iTunes
+
+feed_title = Titel des Podcasts
+feed_title_help = Titel ist der Titel des Podcasts und präsentiert den Podcast in Verzeichnissen, Listen etc.
+feed_subtitle = Untertitel
+feed_subtitle_help = Der Untertitel ist eine Erweiterung des Titels. Der Untertitel soll erklären, worum es in diesem Podcast geht. Während der Titel irgendetwas sein kann, sollte der Untertitel beschreiben, was der tatsächliche Inhalt ist, und welches die wichtigsten Informationen sind, die jeder über dieses Angebot haben möchte. Eine Zusammenfassung ist eine präzise und durchdachte Beschreibung der Podcast-Inhalte.
+feed_description = Beschreibung
+feed_description_help = Während Titel und Untertitel relativ knapp gehalten sind, sollte eine Beschreibung mehrere Sätze enthalten, die einen oder mehrere Absätze bilden.
+feed_link = Podcast Homepage URL
+feed_link_help = 'More info' link for your feed
+feed_license = Lizenz
+feed_license_help = Copyright / Lizenz information, zB Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License
+feed_ttl = Zeit in Sekunden
+feed_ttl_help = How often feed feedreaders check for new material (in seconds, 86000 = 24h) -- mostly ignored by feedreaders
+feed_lang = Sprache
+feed_lang_help = Sprach locale of your feed, eg en-us, de, fr etc. See http://www.rssboard.org/rss-language-codes
+feed_author = Autor
+feed_author_help = Erscheint öffentlich in Podcast-Verzeichnissen.
+feed_owner = Name des Besitzers	
+feed_owner_help = Wird von iTunes und anderen Podcast-Verzeichnissen verwendet, um dich zu kontaktieren.
+feed_explicit = Explicit Content
+feed_explicit_help = If your feed contains explicit material or not (yes, no, clean)
+feed_image = Podcast Logo
+feed_image_help = Apple/iTunes empfiehlt ein 3000 x 3000 Pixel JPG oder PNG.
+feed_mnemonic = Podcast Kürzel
+feed_mnemonic_help = Wird verwendet, um die Episoden durchzunummerieren, zB REX
+feed_email = E-Mail des Besitzers
+feed_email_help = Wird von iTunes und anderen Podcast-Verzeichnissen verwendet, um dich zu kontaktieren.
+feed_category = Hauptkategorie
+feed_category_help = Für die Aufnahme in das ältere, textbasierte Suchsystem dürfen Podcasts bis zu drei Kategorie/Unterkategorie-Paare enthalten. (z.B. "Music" zählt als eine, ebenso wie "Business/Careers"). Für die Aufnahme in das neuere, auf Kategorienlinks basierende Suchsystem sowie für die Plazierung in den Top-Podcasts und Top-Episoden, die auf den meisten Podcast-Seiten in der rechte Spalte auftauchen, wird nur die erste im Feed aufgeführte Kategorie verwendet. (http://www.apple.com/itunes/podcasts/specs.html#category)
+feed_subcategory = Unterkategorie
+feed_subcategory_help = iTunes minor category of your feed
+
+category_form_name = Name
+
+podcastmanager_config = Einstellungen
+podcastmanager_config_legend1 = Einfache Felder
+podcastmanager_config_url = URL
+podcastmanager_config_checkbox = Checkbox
+podcastmanager_config_select = Select
+podcastmanager_config_multiselect = Multiselect
+
+podcastmanager_config_legend2 = Medienpool, Linkmap usw.
+podcastmanager_config_file = Datei
+podcastmanager_config_article = Artikel
+podcastmanager_config_categories = Kategorienauswahl
+podcastmanager_config_pageids = Seitenauswahl
+
+podcastmanager_config_save = Einstellungen speichern
+podcastmanager_config_saved = Einstellungen wurden gespeichert!
+
+# Benennung für die Addonrechte, sichtbar innerhalb der REDAXO-Administration unter Benutzer > Rollen > Allgemein
+
+perm_general_news[] = news[] - Rechte für News-Addon
+perm_general_news[config] = news[config] - Rechte für News-Addon-Konfiguration
+
+podcastmanager_delete = löschen
+podcastmanager_delete_question = Achtung: Der Beitrag wird auch in den anderen Sprachen gelöscht. Möchten Sie den Newsbeitrag wirklich löschen
+podcastmanager_copy = duplizieren
+podcastmanager_deleted = Der Newsbeitrag wurde gelöscht
+podcastmanager_online = Live
+podcastmanager_offline = Entwurf
+
+podcastmanager_copied = Newseintrag wurde kopiert
+
+
+podcastmanager_list_createdate = erstellt am
+
+podcastmanager_error_no_post = Es gibt noch keinen Post zu diesem Thema
+podcastmanager_error_headline = Fehler
+
+podcastmanager_settings = Einstellungen
+podcastmanager_settings_description = Hier sollten Sie festlegen, in welcher REDAXO Kategorie der Newsbereich/Blog ausgegeben wird. Zusätzlich wird ein eigenes Profil für das Redactor2 Addon angelegt (falls Sie dieses installiert haben).
+podcastmanager_settings_saved = Einstellungen wurden gespeichert
+podcastmanager_settings_category = Allgemeine Addon Konfiguration
+podcastmanager_settings_category_label = Artikel für die Podcast-Ausgabe
+podcastmanager_settings_save = Einstellungen Speichern
+podcastmanager_settings_error_redactor2 = Das Redactor2 Profil konnte nicht angelegt werden. Wenn Sie einen Richtext Editor in den Artikeln nutzen möchten, sollten Sie Redactor2 installieren und die Einstellungen nochmal speichern.
