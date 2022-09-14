@@ -61,12 +61,122 @@ class podcastmanager
         if ($baseurl!="") {
             $url = $baseurl;
         }
+        if ((rex_config::get('podcastmanager', 'stats_rss_active') != "active")) {
+            $url = "";
+        }
         $delivery_article = rex_config::get('podcastmanager', 'detail_id');
         //$url = $baseurl.rex_url::media().$item['audiofiles'];
-        $url .= rex_getUrl($delivery_article, 'REX_CLANG_ID', array("deliver"=>$item['id'],"o"=>$origin,"a"=>$origin_article,"f"=>$item['audiofiles']));
+        #$url .= rex_getUrl($delivery_article, 'REX_CLANG_ID', array("deliver"=>$item['id'],"o"=>$origin,"a"=>$origin_article,"f"=>$item['audiofiles']));
+        $url .= rex_url::base('index.php?rex_media_type=log_statistics&rex_media_file='.$item['audiofiles']);
+            #rex_media_manager::getUrl('log_statistics',$item['audiofiles']);
         return $url;
     }
 
+    public static function urlFeedConvert($str)
+    {
+      	
+        $str = xoutputfilter::replace($str, rex_clang::getCurrentId());
+
+        // alternative: markdownify / html2markdown --- Test 08/2022: funktioniert nicht, string bleibt in einer zeile
+        /*
+        $md = new HTML_To_Markdown($str, array('strip_tags' => false));
+        $str = $md;
+
+        $converter = new Markdownify\Converter;
+        $str = $converter->parseString($str);
+        #$converter = new League\HTMLToMarkdown\HtmlConverter();
+        #$str = $converter->convert($str);
+        */
+
+        // strip attributes
+        $wegdamit = array('data-vivaldi-spatnav-clickable="1"','target="_blank"','AMAZON_LINK produkt=','<a href=','</a>','">'); #die letzten 3 für links im text, leider dennoch etwas crappy
+        foreach ($wegdamit as $weg) {
+            $str = str_replace($weg, ' ', $str);
+            $str = str_replace(htmlentities($weg), ' ', $str);
+        }
+
+
+        /*
+        $reg_exUrl = '/ target=[^>]+/';
+
+        preg_match_all($reg_exUrl, $str, $matches);
+        if(count($matches > 0)) {
+            foreach ($matches as $i) {
+                $str = preg_replace($reg_exUrl, '', $str);
+            }
+        }        */
+
+/*
+        $dom = new DOMDocument;
+        $errorState = libxml_use_internal_errors(TRUE); // don't display errors
+        $dom->loadHTML(($str));
+
+        foreach ($dom->getElementsByTagName('a') as $node) {
+            for ($i = $node->attributes->length - 1; $i >= 0; $i--) {
+                $attr = $node->attributes->item($i);
+                if ($attr->name !== 'href') {
+                    $node->removeAttributeNode($attr);
+                }
+            }
+        }
+
+        libxml_use_internal_errors($errorState); // reset the state
+        $str = $dom->saveHTML();
+*/
+
+        // convert links to text
+        /* 
+        $reg_exUrl = '/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/';
+        $urls = array();
+        $urlsToReplace = array();
+        if(preg_match_all($reg_exUrl, $str, $urls)) {
+            $numOfMatches = count($urls[0]);
+            $numOfUrlsToReplace = 0;
+            for($i=0; $i<$numOfMatches; $i++) {
+                $alreadyAdded = false;
+                $numOfUrlsToReplace = count($urlsToReplace);
+                for($j=0; $j<$numOfUrlsToReplace; $j++) {
+                    if($urlsToReplace[$j] == $urls[0][$i]) {
+                        $alreadyAdded = true;
+                    }
+                }
+                if(!$alreadyAdded) {
+                    array_push($urlsToReplace, $urls[0][$i]);
+                }
+            }
+            $numOfUrlsToReplace = count($urlsToReplace);
+            for($i=0; $i<$numOfUrlsToReplace; $i++) {
+                $str = str_replace($urlsToReplace[$i], "<a href=\"".$urlsToReplace[$i]."\">".$urlsToReplace[$i]."</a> ", $str);
+            }
+            return $str;
+        } else {
+            return $str;
+        }*/
+        /* */
+        return $str;
+    }
+    /**
+ * Function: sanitize
+ * Returns a sanitized string, typically for URLs.
+ *
+ * Parameters:
+ *     $string - The string to sanitize.
+ *     $force_lowercase - Force the string to lowercase?
+ *     $anal - If set to *true*, will remove all non-alphanumeric characters.
+ */
+    public static function sanitize($string, $force_lowercase = true, $anal = false) {
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+                       "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+                       "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $clean = trim(str_replace($strip, "", strip_tags($string)));
+        $clean = preg_replace('/\s+/', "-", $clean);
+        $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9]/", "", $clean) : $clean ;
+        return ($force_lowercase) ?
+            (function_exists('mb_strtolower')) ?
+            mb_strtolower($clean, 'UTF-8') :
+        strtolower($clean) :
+        $clean;
+    }
 
     public static function prepare($item, $baseurl = "")
     {
@@ -82,22 +192,32 @@ class podcastmanager
         // $item['subtitle'];
         // $item['audiofiles'];
         // $item['runtime'];
-        if (is_object(rex_media::get($item['audiofiles']))) {
-            $item['filesize'] = rex_media::get($item['audiofiles'])->getSize();
-        }
+        if (rex_config::get('podcastmanager', 'stats_rss_active') != 'active') $baseurl="";
+
+        $item['description'] = htmlspecialchars(xoutputfilter::replace($item['description'],rex_clang::getCurrentId()));
+        #var_dump(xoutputfilter::getFrontendReplacements(rex_clang::getCurrentId()));
         $item['file_url'] = $baseurl.rex_url::media().$item['audiofiles']; //
         $item['file_link'] = podcastmanager::getTrackingUrl($item, rex_config::get('podcastmanager', 'detail_id'), $baseurl);
-        $item['description'] = htmlspecialchars($item['description']);
+        $item['audiofiles'] = trim($item['audiofiles']);
         $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['publishdate']));
-        $item['publishdate'] = strftime("%d %m %y", strtotime($item['publishdate']));
+        $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['publishdate']));
         $item['updatedate'] = (strtotime($item['date']));
         if ($item['number']!="") {
             $item['number'] = str_pad($item['number'], 3, "0", STR_PAD_LEFT);
         }
+        #dump($item);
+        if (empty($item['filesize']) AND !empty($item['audiofiles'])) {
+            $item['filesize'] = rex_media::get($item['audiofiles'])->getSize();
+            #dump($item['filesize']);
+        }
 
-        $url_title = podcastmanager::normalize($item['title']);
+        #$url_title = podcastmanager::normalize($item['title']);
 
         $item['episode_url'] = podcastmanager::getShowUrl($item, $baseurl);
+        
+        // Initialize getID3 engine
+        $getID3 = new getID3;
+        $item['length'] = $getID3->analyze(rex_path::media().$item['audiofiles']);
 
         return $item;
     }
@@ -108,8 +228,9 @@ class podcastmanager
      * @param strong $delivery_article Redaxo Article for providing the media
      * @return string
      */
-    public static function getShowUrl($item, $baseurl = "", $detail_article = '')
+    public static function getShowUrl($item, $baseurl = "", $detail_article = '', $params = "")
     {
+        if (rex_config::get('podcastmanager', 'stats_rss_active') != 'active') $baseurl="";
         $url = "";
         if ($baseurl!="") {
             $url = $baseurl;
@@ -120,9 +241,11 @@ class podcastmanager
         }
         if (!isset($item)) {
             $item=1;
-        } //TBD: letzte episode aus DB holen
+        }
+
+        //TBD: letzte episode aus DB holen
         //$url = $baseurl.rex_url::media().$item['audiofiles'];
-        $url .= rex_getUrl($detail_article, rex_clang::getCurrentId(), array("episode"=>$item['id']));
+        $url .= rex_getUrl($detail_article, rex_clang::getCurrentId(), array("episode"=>$item['number'],"id"=>$item['id'],"thema"=>$item['title']));
         return $url;
     }
 
@@ -150,6 +273,38 @@ class podcastmanager
         //$inputString = "Á,Â,Ã,Ä,Å,Æ,Ç,È,É,Ê,Ë,Ì,Í,Î,Ï,Ð,Ñ,Ò,Ó,Ô,Õ,Ö,×,Ù,Ú,Û,Ü,Ý,Þ,ß,à,á,â,ã,ä,å,æ,ç,è,é,ê,ë,ì,í,î,ï,ð,ñ,ò,ó,ô,õ,ö,ù,ú,û,ü,ý,þ,ÿ";
         $extraCharsToRemove = array("\"","'","`","^","~"," ",",","!",":","?");
         return str_replace($extraCharsToRemove, "_", iconv("utf-8", "ASCII//TRANSLIT", $inputString));
+    }
+
+    /**
+     * http://www.ebrueggeman.com/blog/abbreviate-text-without-cutting-words-in-half
+     * trims text to a space then adds ellipses if desired
+     * @param string $input text to trim
+     * @param int $length in characters to trim to
+     * @param bool $ellipses if ellipses (...) are to be added
+     * @param bool $strip_html if html tags are to be stripped
+     * @return string
+     */
+    public static function trim_text($input, $length, $ellipses = true, $strip_html = true) {
+        //strip tags, if desired
+        if ($strip_html) {
+            $input = strip_tags($input);
+        }
+
+        //no need to trim, already shorter than trim length
+        if (strlen($input) <= $length) {
+            return $input;
+        }
+
+        //find last space within length
+        $last_space = strrpos(substr($input, 0, $length), ' ');
+        $trimmed_text = substr($input, 0, $last_space);
+
+        //add ellipses (...)
+        if ($ellipses) {
+            $trimmed_text .= '...';
+        }
+
+        return $trimmed_text;
     }
 
 

@@ -1,0 +1,5 @@
+
+*.zip
+lib/master.zip.1
+lib/html-to-markdown/.github/*
+lib/getID3/demos/*

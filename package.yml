@@ -1,8 +1,8 @@
 # Alle hier gesetzten Werte können über $addon->getProperty($key) abgefragt werden
 
-package: podcastmanager 
+package: podcastmanager
 version: '1.0.0'
-author: Friends Of REDAXO 
+author: Friends Of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/podcastmanager/
 
 page:
@@ -26,12 +26,16 @@ page:
             yformTable: rex_podcastmanager_stats
             yformClass: podcastmanager-yform
             yformTitle: false
+        serverstats:
+            title: 'Server-Statistik'
+            icon: rex-icon fa-pie-chart
 
 requires:
     redaxo: '>=5.4' # benötigt mindestens REDAXO 5.4
     packages:
         yrewrite: '>=1' # setzt yrewrite voraus
         #url: ^1.0.0-beta5 # benötigt Addon Url
-        yform: '>=2.2' # setzt yform ab v 2.2 voraus
+        #yform: '>=2.2' # setzt yform ab v 2.2 voraus
+        #statistics: '>=1' # das statistics addon für download-tracking
     php:
         version: '>=5.6' # benötigt mindestens PHP 5.6

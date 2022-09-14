@@ -1,4 +1,5 @@
 <?php
+// erzeugt die backend page via yform
 $target_page = rex_request( 'page', 'string' );
 
 if( $target_page == 'yform/manager/data_edit' )

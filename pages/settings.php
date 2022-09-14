@@ -25,8 +25,12 @@ if ($func == 'update') {
         // Brief description
         ['feed_description', 'string'],
         // Copyright / license information
+        ['feed_item_additions', 'string'],
+        // is added to every episode description by default, mainly for RSS
         ['feed_license', 'string'],
         // How often feed readers check for new material (in seconds) -- mostly ignored by readers
+        ['feed_mnemonic', 'string'],
+        // Short tag for Podcast Name to be displayed with the Episode number
         ['feed_ttl', 'string'],
         // Language locale of your feed, eg en-us, de, fr etc. See http://www.rssboard.org/rss-language-codes
         ['feed_lang', 'string'],
@@ -44,6 +48,9 @@ if ($func == 'update') {
         // iTunes minor category of your feed
         ['feed_subcategory', 'string'],
         //other
+        ['stats_rss_active', 'string'],
+        ['stats_prefix', 'string'],
+        ['stats_rss_id', 'string'],
         ['rss_feed_id', 'string'],
         ['detail_id', 'string'],
         ['feed_subtitle', 'string'],
@@ -64,9 +71,11 @@ $Values['feed_title'] = $this->getConfig('feed_title');
 $Values['feed_link'] = $this->getConfig('feed_link');
 $Values['feed_subtitle'] = $this->getConfig('feed_subtitle');
 $Values['feed_description'] = $this->getConfig('feed_description');
+$Values['feed_item_additions'] = $this->getConfig('feed_item_additions');
 $Values['feed_keywords'] = $this->getConfig('feed_keywords');
 $Values['feed_license'] = $this->getConfig('feed_license');
 $Values['feed_ttl'] = $this->getConfig('feed_ttl');
+$Values['feed_mnemonic'] = $this->getConfig('feed_mnemonic');
 $Values['feed_lang'] = $this->getConfig('feed_lang');
 $Values['feed_author'] = $this->getConfig('feed_author');
 $Values['feed_owner'] = $this->getConfig('feed_owner');
@@ -77,6 +86,9 @@ $Values['feed_category'] = $this->getConfig('feed_category');
 $Values['feed_subcategory'] = $this->getConfig('feed_subcategory');
 $Values['rss_feed_id'] = $this->getConfig('rss_feed_id');
 $Values['detail_id'] = $this->getConfig('detail_id');
+$Values['stats_rss_active'] = $this->getConfig('stats_rss_active');
+$Values['stats_prefix'] = $this->getConfig('stats_prefix');
+$Values['stats_rss_id'] = $this->getConfig('stats_rss_id');
 
 
 $content .= '<fieldset><legend>' . $this->i18n('basic_settings') . '</legend>';
@@ -131,14 +143,35 @@ $content .= $fragment->parse('core/form/container.php');
 $formElements = [];
 $n = [];
 $n['label'] = '<label for="feed_description">' . htmlspecialchars_decode($this->i18n('feed_description')) . '</label>';
-$n['field'] = '<textarea class="form-control" type="text" id="feed_description" style="height:3em !important;" name="settings[feed_description]">' . $Values['feed_description'] . '</textarea>';
+$n['field'] = '<textarea class="form-control" type="text" id="feed_description" style="height:4em !important;" name="settings[feed_description]">' . $Values['feed_description'] . '</textarea>';
 $n['note'] = htmlspecialchars_decode($this->i18n('feed_description_help'));
 $formElements[] = $n;
 $fragment = new rex_fragment();
 $fragment->setVar('elements', $formElements, false);
 $content .= $fragment->parse('core/form/container.php');
 
+// Textarea
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="feed_item_additions">' . htmlspecialchars_decode($this->i18n('feed_item_additions')) . '</label>';
+$n['field'] = '<textarea class="form-control" type="text" id="feed_item_additions" style="height:4em !important;" name="settings[feed_item_additions]">' . $Values['feed_item_additions'] . '</textarea>';
+$n['note'] = htmlspecialchars_decode($this->i18n('feed_item_additions_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
 
+
+// Text
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="feed_mnemonic">' . htmlspecialchars_decode($this->i18n('feed_mnemonic')) . '</label>';
+$n['field'] = '<input class="form-control" type="text" id="feed_mnemonic" name="settings[feed_mnemonic]" value="' . $Values['feed_mnemonic'] . '" />';
+$n['note'] = htmlspecialchars_decode($this->i18n('feed_mnemonic_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
 // Text
 $formElements = [];
 $n = [];
@@ -344,6 +377,57 @@ $content .= $fragment->parse('core/form/container.php');
 
 $content .= '</fieldset>';
 
+
+
+/// FIELDSET STATS
+$content .= '</fieldset><fieldset><legend>' . $this->i18n('stats_settings') . '</legend>';
+
+// Seitenauswahl
+if($Values['stats_rss_id']) $validate_link = $baseurl.rex_getUrl($Values['stats_rss_id']);
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="REX_LINK_SELECT_3">' . $this->i18n('config_stats_rss_id') . '</label>';
+$n['field'] = rex_var_link::getWidget(3, 'settings[stats_rss_id]', $this->getConfig('stats_rss_id'));
+$n['note'] = htmlspecialchars_decode($this->i18n('stats_rss_id_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+// Text
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="stats_prefix">' . htmlspecialchars_decode($this->i18n('stats_prefix')) . '</label>';
+$n['field'] = '<input class="form-control" type="text" id="stats_prefix" name="settings[stats_prefix]" value="' . $Values['stats_prefix'] . '" />';
+$n['note'] = htmlspecialchars_decode($this->i18n('stats_prefix_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+
+// Select
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="stats_rss_active">' . $this->i18n('stats_rss_active') . '</label>';
+$select = new rex_select();
+$select->setId('stats_rss_active');
+$select->setAttribute('class', 'stats_rss_active');
+$select->setName('settings[stats_rss_active]');
+$select->addOption('Statistik-Prefixing deaktiviert','0');
+$select->addOption('Statistik-Prefixing aktiviert','active');
+$select->setSelected($this->getConfig('stats_rss_active'));
+$n['field'] = $select->get();
+$n['note'] = htmlspecialchars_decode($this->i18n('stats_rss_active_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+
+
+
+$content .= '</fieldset>';
 
 
 // Save-Button

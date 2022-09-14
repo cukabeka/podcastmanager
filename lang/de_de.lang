@@ -35,6 +35,8 @@ feed_subtitle = Untertitel
 feed_subtitle_help = Der Untertitel ist eine Erweiterung des Titels. Der Untertitel soll erklären, worum es in diesem Podcast geht. Während der Titel irgendetwas sein kann, sollte der Untertitel beschreiben, was der tatsächliche Inhalt ist, und welches die wichtigsten Informationen sind, die jeder über dieses Angebot haben möchte. Eine Zusammenfassung ist eine präzise und durchdachte Beschreibung der Podcast-Inhalte.
 feed_description = Beschreibung
 feed_description_help = Während Titel und Untertitel relativ knapp gehalten sind, sollte eine Beschreibung mehrere Sätze enthalten, die einen oder mehrere Absätze bilden.
+feed_item_additions = Default-Text für RSS
+feed_item_additions_help = Text that is added to every episode description by default, mainly for RSS
 feed_link = Podcast Homepage URL
 feed_link_help = 'More info' link for your feed
 feed_license = Lizenz
@@ -45,20 +47,28 @@ feed_lang = Sprache
 feed_lang_help = Sprach locale of your feed, eg en-us, de, fr etc. See http://www.rssboard.org/rss-language-codes
 feed_author = Autor
 feed_author_help = Erscheint öffentlich in Podcast-Verzeichnissen.
-feed_owner = Name des Besitzers	
+feed_owner = Name des Besitzers
 feed_owner_help = Wird von iTunes und anderen Podcast-Verzeichnissen verwendet, um dich zu kontaktieren.
 feed_explicit = Explicit Content
 feed_explicit_help = If your feed contains explicit material or not (yes, no, clean)
 feed_image = Podcast Logo
 feed_image_help = Apple/iTunes empfiehlt ein 3000 x 3000 Pixel JPG oder PNG.
 feed_mnemonic = Podcast Kürzel
-feed_mnemonic_help = Wird verwendet, um die Episoden durchzunummerieren, zB REX
+feed_mnemonic_help = Wird verwendet, um die Episoden durchzunummerieren, zB REX bei einem Redaxo-Podcast
 feed_email = E-Mail des Besitzers
 feed_email_help = Wird von iTunes und anderen Podcast-Verzeichnissen verwendet, um dich zu kontaktieren.
 feed_category = Hauptkategorie
-feed_category_help = Für die Aufnahme in das ältere, textbasierte Suchsystem dürfen Podcasts bis zu drei Kategorie/Unterkategorie-Paare enthalten. (z.B. "Music" zählt als eine, ebenso wie "Business/Careers"). Für die Aufnahme in das neuere, auf Kategorienlinks basierende Suchsystem sowie für die Plazierung in den Top-Podcasts und Top-Episoden, die auf den meisten Podcast-Seiten in der rechte Spalte auftauchen, wird nur die erste im Feed aufgeführte Kategorie verwendet. (http://www.apple.com/itunes/podcasts/specs.html#category)
+feed_category_help = Für die Aufnahme in das ältere, textbasierte Suchsystem dürfen Podcasts bis zu drei Kategorie/Unterkategorie-Paare enthalten. (z.B. "Music" zählt als eine, ebenso wie "Business/Careers"). Für die Aufnahme in das neuere, auf Kategorienlinks basierende Suchsystem sowie für die Plazierung in den Top-Podcasts und Top-Episoden, die auf den meisten Podcast-Seiten in der rechte Spalte auftauchen, wird nur die erste im Feed aufgeführte Kategorie verwendet. (<a href="https://help.apple.com/itc/podcasts_connect/#/itc9267a2f12">Siehe Apple Kategorieverzeichnis</a>)
 feed_subcategory = Unterkategorie
 feed_subcategory_help = iTunes minor category of your feed
+other_settings = weitere Einstellungen
+config_rss_feed_id = RSS-FEED-Artikel
+feed_rss_feed_id_help = Artikel, in dem der Artikel zur Auslieferung des RSS Feed liegt (Template beachten!)
+detail_id = Episoden-Detail-Artikel
+detail_id_help = Artikel, in dem eine Podcast-Episode in der Detailansicht ausgegeben wird
+setting_limit = Limit
+setting_limit_help = Wie viele Folgen sollen im Feed maximal ausgegeben werden (default: unlimitiert)
+
 
 category_form_name = Name
 
@@ -105,3 +115,12 @@ podcastmanager_settings_category = Allgemeine Addon Konfiguration
 podcastmanager_settings_category_label = Artikel für die Podcast-Ausgabe
 podcastmanager_settings_save = Einstellungen Speichern
 podcastmanager_settings_error_redactor2 = Das Redactor2 Profil konnte nicht angelegt werden. Wenn Sie einen Richtext Editor in den Artikeln nutzen möchten, sollten Sie Redactor2 installieren und die Einstellungen nochmal speichern.
+
+stats_settings = Statistik Tool Einstellungen
+config_stats_rss_id = Artikel, der für das externe Statistik-Tool das RSS liefert, z.B. dür http://podtrac.com
+config_stats_rss_id = Artikel, der für das externe Statistik-Tool das RSS liefert, z.B. für <b>http://podtrac.com</b> oder <b>http://blubbry.com</b>
+stats_rss_id_help = Alle anderen Instanzen werden bei aktiviertem Prefixing ersetzt
+stats_prefix = Prefix für alle Enclosures etc
+stats_rss_active_help = Wenn inaktiv, werden die enclosures nicht verändert
+stats_rss_prefix = Prefix für alle Enclosures etc
+stats_prefix_help = Ein Prefix wie zB <b>https://dts.podtrac.com/redirect.mp3</b> oder <b>https://publish.blubrry.com/</b> (ohne trailing slash hinten!)- siehe auch Measurement Service Dokumentation
