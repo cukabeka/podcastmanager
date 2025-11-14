@@ -45,3 +45,30 @@ CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager_categories` (
     `updatedate` datetime NOT NULL,
     PRIMARY KEY  (`pid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager_stats` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `episode_id` int(10) unsigned NOT NULL,
+    `episode_number` varchar(255) NOT NULL DEFAULT '',
+    `session_id` varchar(255) NOT NULL DEFAULT '',
+    `ip_hash` varchar(64) NOT NULL DEFAULT '',
+    `user_agent` varchar(500) DEFAULT NULL,
+    `referrer` varchar(500) DEFAULT NULL,
+    `download_type` enum('stream','download','rss','embed') DEFAULT 'stream',
+    `bytes_sent` bigint(20) unsigned DEFAULT 0,
+    `duration_seconds` int(10) unsigned DEFAULT 0,
+    `completed` tinyint(1) DEFAULT 0,
+    `platform` varchar(50) DEFAULT NULL,
+    `app_name` varchar(100) DEFAULT NULL,
+    `country` varchar(2) DEFAULT NULL,
+    `timestamp` int(10) unsigned NOT NULL,
+    `date` date NOT NULL,
+    `is_bot` tinyint(1) DEFAULT 0,
+    `createdate` datetime NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `episode_id` (`episode_id`),
+    KEY `date` (`date`),
+    KEY `episode_date` (`episode_id`, `date`),
+    KEY `timestamp` (`timestamp`),
+    KEY `is_bot` (`is_bot`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

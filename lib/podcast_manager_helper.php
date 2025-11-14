@@ -13,36 +13,44 @@ class podcastmanager
     /**
      * tracks a download
      *
-     * @return $baseurl id of the newsarticle
+     * @param array $item Episode data
+     * @param int $origin Origin type (1=RSS, 2=Website, 3=Direct)
+     * @param int $origin_article Origin article ID
+     * @return void
      */
     public static function track($item, $origin, $origin_article)
     {
-
-/*
- *          $s = new rex_sql;
-            $s->setTable("rex_0_stats_files");
-            $s->setValue("kennung",$file_name);
-            $s->setValue("year",date("Y"));
-            $s->setValue("month",date("m"));
-            $s->setValue("day",date("d"));
-            $s->setValue("ip",$_SERVER["REMOTE_ADDR"]);
-            $s->insert();
-            */
-
-        $db_table = "rex_podcastmanager_stats";
+        // Use new PodcastStats class if available
+        if (class_exists('PodcastStats')) {
+            $downloadType = 'stream';
+            if ($origin == 1) {
+                $downloadType = 'rss';
+            } elseif ($origin == 3) {
+                $downloadType = 'download';
+            }
+            
+            PodcastStats::track($item, $downloadType, [
+                'origin' => $origin,
+                'origin_article' => $origin_article,
+            ]);
+        }
+        
+        // Legacy tracking for backward compatibility
+        $db_table = rex::getTable("podcastmanager_stats");
 
         $db = rex_sql::factory();
-        //$db->debugsql = 0;
         $db->setTable($db_table);
 
-        $db->setValue("media_id", $item["id"]);
-        $db->setValue("show_id", $item["number"]);
-        //$db->setValue("url", $url);
-        $db->setValue("origin", $origin);
-        $db->setValue("origin_article", $origin_article);
+        $db->setValue("episode_id", $item["id"]);
+        $db->setValue("episode_number", $item["number"]);
         $db->setValue("timestamp", time());
+        $db->setValue("createdate", date('Y-m-d H:i:s'));
 
-        $db->insert();
+        try {
+            $db->insert();
+        } catch (Exception $e) {
+            // Silently fail - don't break the download
+        }
 
         return ;
     }
