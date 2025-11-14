@@ -52,3 +52,17 @@ feed_subcategory_help = iTunes minor category of your feed
 
 perm_general_news[] = news[] - Rechte für News-Addon
 perm_general_news[config] = news[config] - Rechte für News-Addon-Konfiguration
+
+server_statistics_settings = Server Statistics (Webalizer / AWStats)
+stats_enabled = Enable Statistics
+stats_enabled_label = Display server statistics for Podcastmanager
+stats_enabled_help = When enabled, server statistics will be displayed in the backend (Page: Statistics)
+stats_provider = Statistics Tool
+stats_provider_help = Choose the statistics tool available on your server. Webalizer generates HTML reports, AWStats text-based reports.
+stats_path = Path to Statistics Files
+stats_path_help = Enter the path where the statistics files are located. This can be relative from the server root or relative from the REDAXO installation.
+stats_path_examples = Possible Paths
+stats_info_title = Available Statistics Tools
+stats_info_webalizer = HTML reports in format <code>usage_YYYYMM.html</code>. Available on many hosts under <code>/usage</code>.
+stats_info_awstats = Text-based reports in format <code>awstats.YYYYMM.domain.txt</code>. Typically under <code>/var/lib/awstats</code> or in user home.
+stats_info_note = The paths may differ depending on your hosting provider. Contact your support if you don't know where the files are located.

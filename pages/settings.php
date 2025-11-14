@@ -55,7 +55,11 @@ if ($func == 'update') {
         ['detail_id', 'string'],
         ['feed_subtitle', 'string'],
         ['feed_keywords', 'string'],
-        ['feed_owner', 'string']
+        ['feed_owner', 'string'],
+        // ============================================== Server Statistics options
+        ['stats_enabled', 'string'],
+        ['stats_provider', 'string'],
+        ['stats_path', 'string']
         // END OF CONFIGURATION VARIABLES
         // TODO: <atom:link rel="payment" title="Flattr this!" href="https://flattr.com/submit/auto?user_id=redaxo&amp;language=de_DE&amp;" type="text/html" />
 
@@ -89,6 +93,9 @@ $Values['detail_id'] = $this->getConfig('detail_id');
 $Values['stats_rss_active'] = $this->getConfig('stats_rss_active');
 $Values['stats_prefix'] = $this->getConfig('stats_prefix');
 $Values['stats_rss_id'] = $this->getConfig('stats_rss_id');
+$Values['stats_enabled'] = $this->getConfig('stats_enabled');
+$Values['stats_provider'] = $this->getConfig('stats_provider', 'webalizer');
+$Values['stats_path'] = $this->getConfig('stats_path');
 
 
 $content .= '<fieldset><legend>' . $this->i18n('basic_settings') . '</legend>';
@@ -430,7 +437,84 @@ $content .= $fragment->parse('core/form/container.php');
 $content .= '</fieldset>';
 
 
-// Save-Button
+// ====== SERVER STATISTICS SETTINGS FIELDSET ======
+$content .= '</fieldset><fieldset><legend>' . $this->i18n('server_statistics_settings') . '</legend>';
+
+// Enable/Disable
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="stats_enabled">' . $this->i18n('stats_enabled') . '</label>';
+$n['field'] = '<div class="checkbox"><label><input type="checkbox" id="stats_enabled" name="settings[stats_enabled]" value="1"' . ($Values['stats_enabled'] ? ' checked="checked"' : '') . ' /> ' . $this->i18n('stats_enabled_label') . '</label></div>';
+$n['note'] = htmlspecialchars_decode($this->i18n('stats_enabled_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+// Provider Selection
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="stats_provider">' . $this->i18n('stats_provider') . '</label>';
+$select = new rex_select();
+$select->setId('stats_provider');
+$select->setAttribute('class', 'stats_provider');
+$select->setName('settings[stats_provider]');
+$select->addOption('Webalizer (HTML Reports)', 'webalizer');
+$select->addOption('AWStats (Text Reports)', 'awstats');
+$select->setSelected($Values['stats_provider']);
+$n['field'] = $select->get();
+$n['note'] = htmlspecialchars_decode($this->i18n('stats_provider_help'));
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+// Path to Statistics Files
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="stats_path">' . htmlspecialchars_decode($this->i18n('stats_path')) . '</label>';
+$n['field'] = '<input class="form-control" type="text" id="stats_path" name="settings[stats_path]" value="' . htmlspecialchars($Values['stats_path']) . '" placeholder="/usage/podcast_domain_de" />';
+
+// Helper note mit möglichen Pfaden
+$helperNote = htmlspecialchars_decode($this->i18n('stats_path_help')) . '<br><br>';
+$helperNote .= '<strong>' . $this->i18n('stats_path_examples') . ':</strong><br>';
+$helperNote .= '<div style="background-color: #f5f5f5; padding: 10px; margin-top: 8px; border-radius: 3px; font-family: monospace; font-size: 12px;">';
+$helperNote .= '<strong>Webalizer (HTML):</strong><br>';
+$helperNote .= '/usage/podcast_domain_de &nbsp;&nbsp;&nbsp;&nbsp;<em>(Relativ von Server-Root)</em><br>';
+$helperNote .= '../../usage/podcast_domain_de &nbsp;&nbsp;&nbsp;&nbsp;<em>(Relativ von REDAXO-Root)</em><br>';
+$helperNote .= '/home/user/public_html/usage/podcast_domain_de &nbsp;&nbsp;&nbsp;&nbsp;<em>(Absolut)</em><br>';
+$helperNote .= '<br>';
+$helperNote .= '<strong>AWStats (Text):</strong><br>';
+$helperNote .= '/var/lib/awstats &nbsp;&nbsp;&nbsp;&nbsp;<em>(System-Standard auf Linux)</em><br>';
+$helperNote .= '/home/user/awstats &nbsp;&nbsp;&nbsp;&nbsp;<em>(Nutzerspezifisch)</em><br>';
+$helperNote .= '../../awstats &nbsp;&nbsp;&nbsp;&nbsp;<em>(Relativ von REDAXO-Root)</em><br>';
+$helperNote .= '</div>';
+
+$n['note'] = $helperNote;
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+// Info Box
+$infoBox = '<div class="alert alert-info" style="margin-top: 15px;">';
+$infoBox .= '<strong>' . $this->i18n('stats_info_title') . ':</strong><br>';
+$infoBox .= '<ul style="margin: 8px 0; padding-left: 20px;">';
+$infoBox .= '<li><strong>Webalizer:</strong> ' . $this->i18n('stats_info_webalizer') . '</li>';
+$infoBox .= '<li><strong>AWStats:</strong> ' . $this->i18n('stats_info_awstats') . '</li>';
+$infoBox .= '</ul>';
+$infoBox .= '<p style="margin-top: 10px; font-size: 12px;">' . $this->i18n('stats_info_note') . '</p>';
+$infoBox .= '</div>';
+
+$formElements = [];
+$n = [];
+$n['field'] = $infoBox;
+$formElements[] = $n;
+$fragment = new rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$content .= $fragment->parse('core/form/container.php');
+
+$content .= '</fieldset>';
 $formElements = [];
 $n = [];
 $n['field'] = '<button class="btn btn-save rex-form-aligned" type="submit" name="save" value="' . $this->i18n('save') . '">' . $this->i18n('save') . '</button>';

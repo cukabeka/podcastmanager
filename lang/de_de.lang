@@ -124,3 +124,17 @@ stats_prefix = Prefix für alle Enclosures etc
 stats_rss_active_help = Wenn inaktiv, werden die enclosures nicht verändert
 stats_rss_prefix = Prefix für alle Enclosures etc
 stats_prefix_help = Ein Prefix wie zB <b>https://dts.podtrac.com/redirect.mp3</b> oder <b>https://publish.blubrry.com/</b> (ohne trailing slash hinten!)- siehe auch Measurement Service Dokumentation
+
+server_statistics_settings = Server-Statistiken (Webalizer / AWStats)
+stats_enabled = Statistiken aktivieren
+stats_enabled_label = Server-Statistiken für Podcastmanager anzeigen
+stats_enabled_help = Wenn aktiviert, werden Server-Statistiken im Backend angezeigt (Seite: Statistiken)
+stats_provider = Statistik-Tool
+stats_provider_help = Wähle das auf deinem Server verfügbare Statistik-Tool. Webalizer generiert HTML-Reports, AWStats Text-basierte Reports.
+stats_path = Pfad zu Statistik-Dateien
+stats_path_help = Gebe den Pfad an, unter dem sich die Statistik-Dateien befinden. Dies kann relativ vom Server-Root oder relativ von der REDAXO-Installation sein.
+stats_path_examples = Mögliche Pfade
+stats_info_title = Verfügbare Statistik-Tools
+stats_info_webalizer = HTML-Reports im Format <code>usage_YYYYMM.html</code>. Auf vielen Hostern unter <code>/usage</code> verfügbar.
+stats_info_awstats = Text-basierte Reports im Format <code>awstats.YYYYMM.domain.txt</code>. Typischerweise unter <code>/var/lib/awstats</code> oder im Nutzerhome.
+stats_info_note = Die Pfade können je nach Hoster unterschiedlich sein. Kontaktiere deinen Support, falls du nicht weißt, wo die Dateien liegen.
