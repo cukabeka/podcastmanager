@@ -74,85 +74,30 @@ class podcastmanager
 
     public static function urlFeedConvert($str)
     {
-      	
-        $str = xoutputfilter::replace($str, rex_clang::getCurrentId());
-
-        // alternative: markdownify / html2markdown --- Test 08/2022: funktioniert nicht, string bleibt in einer zeile
-        /*
-        $md = new HTML_To_Markdown($str, array('strip_tags' => false));
-        $str = $md;
-
-        $converter = new Markdownify\Converter;
-        $str = $converter->parseString($str);
-        #$converter = new League\HTMLToMarkdown\HtmlConverter();
-        #$str = $converter->convert($str);
-        */
-
-        // strip attributes
-        $wegdamit = array('data-vivaldi-spatnav-clickable="1"','target="_blank"','AMAZON_LINK produkt=','<a href=','</a>','">'); #die letzten 3 für links im text, leider dennoch etwas crappy
-        foreach ($wegdamit as $weg) {
-            $str = str_replace($weg, ' ', $str);
-            $str = str_replace(htmlentities($weg), ' ', $str);
-        }
-
-
-        /*
-        $reg_exUrl = '/ target=[^>]+/';
-
-        preg_match_all($reg_exUrl, $str, $matches);
-        if(count($matches > 0)) {
-            foreach ($matches as $i) {
-                $str = preg_replace($reg_exUrl, '', $str);
-            }
-        }        */
-
-/*
-        $dom = new DOMDocument;
-        $errorState = libxml_use_internal_errors(TRUE); // don't display errors
-        $dom->loadHTML(($str));
-
-        foreach ($dom->getElementsByTagName('a') as $node) {
-            for ($i = $node->attributes->length - 1; $i >= 0; $i--) {
-                $attr = $node->attributes->item($i);
-                if ($attr->name !== 'href') {
-                    $node->removeAttributeNode($attr);
-                }
+        // Process xoutputfilter replacements if addon is available
+        if (rex_addon::exists('xoutputfilter') && rex_addon::get('xoutputfilter')->isAvailable()) {
+            try {
+                $str = xoutputfilter::replace($str, rex_clang::getCurrentId());
+            } catch (Exception $e) {
+                // If xoutputfilter fails, continue without it
             }
         }
 
-        libxml_use_internal_errors($errorState); // reset the state
-        $str = $dom->saveHTML();
-*/
+        // Convert HTML to more readable format for RSS feeds
+        // Replace <br> and <p> tags with line breaks
+        $str = str_replace(['<br>', '<br/>', '<br />', '</p>'], "\n", $str);
+        $str = str_replace('<p>', "\n\n", $str);
+        
+        // Convert links to readable format: Link text (URL)
+        $str = preg_replace('/<a[^>]+href=["\']([^"\']+)["\'][^>]*>([^<]+)<\/a>/i', '$2 ($1)', $str);
+        
+        // Remove remaining HTML tags but keep the content
+        $str = strip_tags($str);
+        
+        // Clean up extra whitespace
+        $str = preg_replace('/\n{3,}/', "\n\n", $str);
+        $str = trim($str);
 
-        // convert links to text
-        /* 
-        $reg_exUrl = '/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/';
-        $urls = array();
-        $urlsToReplace = array();
-        if(preg_match_all($reg_exUrl, $str, $urls)) {
-            $numOfMatches = count($urls[0]);
-            $numOfUrlsToReplace = 0;
-            for($i=0; $i<$numOfMatches; $i++) {
-                $alreadyAdded = false;
-                $numOfUrlsToReplace = count($urlsToReplace);
-                for($j=0; $j<$numOfUrlsToReplace; $j++) {
-                    if($urlsToReplace[$j] == $urls[0][$i]) {
-                        $alreadyAdded = true;
-                    }
-                }
-                if(!$alreadyAdded) {
-                    array_push($urlsToReplace, $urls[0][$i]);
-                }
-            }
-            $numOfUrlsToReplace = count($urlsToReplace);
-            for($i=0; $i<$numOfUrlsToReplace; $i++) {
-                $str = str_replace($urlsToReplace[$i], "<a href=\"".$urlsToReplace[$i]."\">".$urlsToReplace[$i]."</a> ", $str);
-            }
-            return $str;
-        } else {
-            return $str;
-        }*/
-        /* */
         return $str;
     }
     /**
@@ -184,7 +129,7 @@ class podcastmanager
         * Returns array of normalized values
         * @param string $baseurl Server URL
         * @param array $item podcast content
-        * @return string
+        * @return array
         */
         // Set Variables - available:
         // $item['title'];
@@ -194,32 +139,85 @@ class podcastmanager
         // $item['runtime'];
         if (rex_config::get('podcastmanager', 'stats_rss_active') != 'active') $baseurl="";
 
-        $item['description'] = htmlspecialchars(xoutputfilter::replace($item['description'],rex_clang::getCurrentId()));
-        #var_dump(xoutputfilter::getFrontendReplacements(rex_clang::getCurrentId()));
+        // Backward compatibility: Use richtext if description is empty
+        if (empty($item['description']) && !empty($item['richtext'])) {
+            $item['description'] = $item['richtext'];
+        }
+        
+        // Process xoutputfilter if available
+        if (rex_addon::exists('xoutputfilter') && rex_addon::get('xoutputfilter')->isAvailable()) {
+            try {
+                $item['description'] = xoutputfilter::replace($item['description'], rex_clang::getCurrentId());
+            } catch (Exception $e) {
+                // Continue without xoutputfilter if it fails
+            }
+        }
+        
+        $item['description'] = htmlspecialchars($item['description']);
+        
         $item['file_url'] = $baseurl.rex_url::media().$item['audiofiles']; //
         $item['file_link'] = podcastmanager::getTrackingUrl($item, rex_config::get('podcastmanager', 'detail_id'), $baseurl);
         $item['audiofiles'] = trim($item['audiofiles']);
-        $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['publishdate']));
-        $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['publishdate']));
-        $item['updatedate'] = (strtotime($item['date']));
+        
+        // Handle publish date
+        if (!empty($item['publishdate'])) {
+            $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['publishdate']));
+            $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['publishdate']));
+        } else {
+            // Fallback to creation date if no publish date
+            $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['createdate']));
+            $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['createdate']));
+        }
+        
+        $item['updatedate'] = (strtotime($item['updatedate']));
+        
         if ($item['number']!="") {
             $item['number'] = str_pad($item['number'], 3, "0", STR_PAD_LEFT); #passt Zahlen auf das Format 00X an
         }
-        #dump($item);
+        
+        // Get filesize
         if (empty($item['filesize']) AND !empty($item['audiofiles'])) {
-            $item['filesize'] = rex_media::get($item['audiofiles'])->getSize();
-            #dump($item['filesize']);
+            $media = rex_media::get($item['audiofiles']);
+            if ($media) {
+                $item['filesize'] = $media->getSize();
+            }
         }
-
-        #$url_title = podcastmanager::normalize($item['title']);
 
         $item['episode_url'] = podcastmanager::getShowUrl($item, $baseurl);
         
-        // Initialize getID3 engine
-        if(class_exists('getID3')){
-            $getID3 = new getID3;
-            $item['length'] = $getID3->analyze(rex_path::media().$item['audiofiles']);
+        // Extract ID3 tags from MP3 file if getID3 is available and runtime is empty
+        if (class_exists('getID3') && !empty($item['audiofiles']) && empty($item['runtime'])) {
+            try {
+                $getID3 = new getID3;
+                $media_path = rex_path::media() . $item['audiofiles'];
+                
+                if (file_exists($media_path)) {
+                    $fileInfo = $getID3->analyze($media_path);
+                    
+                    // Extract playtime in seconds
+                    if (isset($fileInfo['playtime_seconds'])) {
+                        $item['runtime'] = (int)$fileInfo['playtime_seconds'];
+                    }
+                    
+                    // Store additional info if needed
+                    if (isset($fileInfo['playtime_string'])) {
+                        $item['runtime_formatted'] = $fileInfo['playtime_string'];
+                    }
+                }
+            } catch (Exception $e) {
+                // Silently ignore getID3 errors
+            }
         }
+        
+        // Format runtime for display (convert seconds to HH:MM:SS if numeric)
+        if (!empty($item['runtime']) && is_numeric($item['runtime'])) {
+            $seconds = (int)$item['runtime'];
+            $hours = floor($seconds / 3600);
+            $minutes = floor(($seconds % 3600) / 60);
+            $secs = $seconds % 60;
+            $item['runtime_formatted'] = sprintf('%02d:%02d:%02d', $hours, $minutes, $secs);
+        }
+        
         return $item;
     }
 
@@ -311,51 +309,97 @@ class podcastmanager
 
     /**
      * Returns stream of an episode
-     * @param array $file complete item array
+     * @param int $item_id Episode ID
+     * @param int $origin Origin identifier
+     * @param int $origin_article Origin article ID
      * @return stream
      */
     public static function download($item_id, $origin, $origin_article)
     {
-        $pod_items = rex_sql::factory()->getArray('SELECT * FROM rex_podcastmanager WHERE (`id` = '.(int)$item_id.') LIMIT 1');
-
-        if (is_array($pod_items)) {
-            $item=$pod_items[0];
+        // Security: Validate and sanitize inputs
+        $item_id = (int)$item_id;
+        $origin = (int)$origin;
+        $origin_article = (int)$origin_article;
+        
+        if ($item_id <= 0) {
+            return;
         }
+        
+        $pod_items = rex_sql::factory()->getArray('SELECT * FROM ' . rex::getTable('podcastmanager') . ' WHERE (`id` = ' . $item_id . ') AND (`status` = 1) LIMIT 1');
+
+        if (!is_array($pod_items) || empty($pod_items)) {
+            return;
+        }
+        
+        $item = $pod_items[0];
 
         podcastmanager::track($item, $origin, $origin_article);
 
         $file_name = trim($item['audiofiles']);
-        $contentType = rex_media::get($item['audiofiles'])->getType();
-        $file_path = rex_url::media().$file_name;
-        $server_path = rex_path::media().$file_name;
+        
+        // Security: Validate media file exists
+        $media = rex_media::get($file_name);
+        if (!$media) {
+            return;
+        }
+        
+        $contentType = $media->getType();
+        $server_path = rex_path::media() . $file_name;
+        
+        // Security: Verify file exists and is within media directory
+        if (!file_exists($server_path) || strpos(realpath($server_path), realpath(rex_path::media())) !== 0) {
+            return;
+        }
+        
         rex_response::sendFile($server_path, $contentType, $contentDisposition = 'inline', $file_name);
     }
 
     /**
      * Returns stream of an episode as a redirect
-     * @param array $file complete item array
+     * @param int $item_id Episode ID
+     * @param int $origin Origin identifier
+     * @param int $origin_article Origin article ID
      * @return initiates download
      */
     public static function deliver($item_id, $origin, $origin_article)
     {
-        $pod_items = rex_sql::factory()->getArray('SELECT * FROM rex_podcastmanager WHERE (`id` = '.(int)$item_id.') LIMIT 1');
-
-        if (is_array($pod_items)) {
-            $item=$pod_items[0];
+        // Security: Validate and sanitize inputs
+        $item_id = (int)$item_id;
+        $origin = (int)$origin;
+        $origin_article = (int)$origin_article;
+        
+        if ($item_id <= 0) {
+            return "<div class=warning>Download fehlgeschlagen</div>";
         }
+        
+        $pod_items = rex_sql::factory()->getArray('SELECT * FROM ' . rex::getTable('podcastmanager') . ' WHERE (`id` = ' . $item_id . ') AND (`status` = 1) LIMIT 1');
+
+        if (!is_array($pod_items) || empty($pod_items)) {
+            return "<div class=warning>Download fehlgeschlagen</div>";
+        }
+        
+        $item = $pod_items[0];
 
         podcastmanager::track($item, $origin, $origin_article);
 
         $file_name = trim($item['audiofiles']);
-        $contentType = rex_media::get($item['audiofiles'])->getType();
-        $file_path = rex_url::media().$file_name;
-        $server_path = rex_path::media().$file_name;
+        
+        // Security: Validate media file exists
+        $media = rex_media::get($file_name);
+        if (!$media) {
+            return "<div class=warning>Download fehlgeschlagen</div>";
+        }
+        
+        $contentType = $media->getType();
+        $file_path = rex_url::media() . $file_name;
+        $server_path = rex_path::media() . $file_name;
+        
+        // Security: Verify file exists and is within media directory
+        if (!file_exists($server_path) || strpos(realpath($server_path), realpath(rex_path::media())) !== 0) {
+            return "<div class=warning>Download fehlgeschlagen</div>";
+        }
 
-        $file_url = rtrim(rex_yrewrite::getCurrentDomain()->getUrl(), "/").$file_path;
-
-        #dump($file_url,$server_path);
-
-        #podcastmanager::rangeDownload($server_path);
+        $file_url = rtrim(rex_yrewrite::getCurrentDomain()->getUrl(), "/") . $file_path;
 
         if ($file_path != "") {
 
@@ -384,7 +428,7 @@ class podcastmanager
                 header("Cache-Control: private");
                 header("Pragma: no-cache");
                 header("HTTP/1.1 301 Moved Permanently");
-                header("Location: ".$file_url);
+                header("Location: " . $file_url);
             }
 
             return true;

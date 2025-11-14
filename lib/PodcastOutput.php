@@ -44,6 +44,7 @@ class PodcastOutput
             'width' => 12,                  // Column width (Bootstrap)
             'detail_id' => rex_config::get('podcastmanager', 'detail_id'),
             'order' => 'DESC',
+            'category' => '',               // Filter by category ID
         ];
     }
     
@@ -98,9 +99,10 @@ class PodcastOutput
      * Get episodes from database
      * 
      * @param bool $single Get only one episode (for detail view)
+     * @param string $category Filter by category ID (optional)
      * @return array
      */
-    private function getEpisodes($single = false)
+    private function getEpisodes($single = false, $category = '')
     {
         $limit = '';
         if ($single) {
@@ -116,7 +118,20 @@ class PodcastOutput
             $condition = 'AND `id`=' . $episode_id;
         }
         
-        $sql = 'SELECT * FROM rex_podcastmanager
+        // Category filter
+        if (!empty($category)) {
+            $condition .= ' AND FIND_IN_SET(' . (int)$category . ', `podcastmanager_category_id`)';
+        }
+        
+        // Publication date filter: Only show episodes with publish date in the past or today
+        $today = date('d.m.Y');
+        $condition .= ' AND (
+            `publishdate` = "" OR 
+            `publishdate` IS NULL OR 
+            STR_TO_DATE(`publishdate`, "%d.%m.%Y") <= STR_TO_DATE("' . $today . '", "%d.%m.%Y")
+        )';
+        
+        $sql = 'SELECT * FROM ' . rex::getTable('podcastmanager') . '
                 WHERE (`status` = 1)
                 ' . $condition . '
                 ORDER BY STR_TO_DATE(publishdate, "%d.%m.%Y") ' . $this->config['order'] . ' ' . $limit;
@@ -131,7 +146,7 @@ class PodcastOutput
      */
     private function renderDetail()
     {
-        $episodes = $this->getEpisodes(true);
+        $episodes = $this->getEpisodes(true, $this->config['category']);
         
         if (empty($episodes)) {
             return $this->renderNoEpisodes();
@@ -149,7 +164,7 @@ class PodcastOutput
      */
     private function renderOverview()
     {
-        $episodes = $this->getEpisodes(false);
+        $episodes = $this->getEpisodes(false, $this->config['category']);
         
         if (empty($episodes)) {
             return $this->renderNoEpisodes();
@@ -178,7 +193,7 @@ class PodcastOutput
      */
     private function renderStart()
     {
-        $episodes = $this->getEpisodes(false);
+        $episodes = $this->getEpisodes(false, $this->config['category']);
         
         if (empty($episodes)) {
             return $this->renderNoEpisodes();

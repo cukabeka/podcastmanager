@@ -162,19 +162,20 @@ class PodcastRSS
     }
     
     /**
-     * Generate classic RSS 2.0 feed
+     * Generate classic RSS 2.0 feed with Apple Podcasts and Spotify optimization
      */
     private function generateClassicRssFeed()
     {
         $xml = '<?xml version="1.0" encoding="utf-8" ?>' . PHP_EOL;
         $xml .= '<?xml-stylesheet href="/xsl/rss.xsl" type="text/xsl"?>' . PHP_EOL;
-        $xml .= '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:atom="http://www.w3.org/2005/Atom">' . PHP_EOL;
+        $xml .= '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:atom="http://www.w3.org/2005/Atom">' . PHP_EOL;
         $xml .= '<channel>' . PHP_EOL;
         $xml .= '<title>' . htmlspecialchars($this->config['feed_title']) . '</title>' . PHP_EOL;
         $xml .= '<link>' . $this->config['feed_link'] . '</link>' . PHP_EOL;
-        $xml .= '<generator></generator>' . PHP_EOL;
+        $xml .= '<generator>REDAXO Podcast Manager</generator>' . PHP_EOL;
+        $xml .= '<lastBuildDate>' . date(DateTime::RFC2822) . '</lastBuildDate>' . PHP_EOL;
         
-        // iTunes metadata
+        // iTunes metadata (required for Apple Podcasts)
         $xml .= '<itunes:author>' . htmlspecialchars($this->config['feed_author']) . '</itunes:author>' . PHP_EOL;
         $xml .= '<itunes:owner>' . PHP_EOL;
         $xml .= '<itunes:name>' . htmlspecialchars($this->config['feed_author']) . '</itunes:name>' . PHP_EOL;
@@ -182,6 +183,7 @@ class PodcastRSS
         $xml .= '</itunes:owner>' . PHP_EOL;
         $xml .= '<itunes:image href="' . $this->config['feed_image'] . '" />' . PHP_EOL;
         $xml .= '<itunes:explicit>' . htmlspecialchars($this->config['feed_explicit']) . '</itunes:explicit>' . PHP_EOL;
+        $xml .= '<itunes:type>episodic</itunes:type>' . PHP_EOL; // Apple Podcasts 2025 requirement
         $xml .= '<itunes:category text="' . htmlspecialchars($this->config['feed_category']) . '">' . PHP_EOL;
         $xml .= '<itunes:category text="' . htmlspecialchars($this->config['feed_subcategory']) . '" />' . PHP_EOL;
         $xml .= '</itunes:category>' . PHP_EOL;
@@ -195,7 +197,10 @@ class PodcastRSS
         $xml .= '<language>' . htmlspecialchars($this->config['feed_lang']) . '</language>' . PHP_EOL;
         $xml .= '<copyright>' . htmlspecialchars($this->config['feed_license']) . '</copyright>' . PHP_EOL;
         $xml .= '<ttl>86400</ttl>' . PHP_EOL;
-        $xml .= '<atom:link href="' . $this->baseurl . rex_getUrl(rex_config::get('podcastmanager', 'rss_feed_id')) . '" rel="self" type="application/rss+xml"/>' . PHP_EOL;
+        
+        // Atom self-link (required for validation)
+        $feedUrl = $this->baseurl . rex_getUrl(rex_config::get('podcastmanager', 'rss_feed_id'));
+        $xml .= '<atom:link href="' . htmlspecialchars($feedUrl) . '" rel="self" type="application/rss+xml"/>' . PHP_EOL;
         
         // Add episodes
         $xml .= $this->generateEpisodeXml();
@@ -258,7 +263,7 @@ class PodcastRSS
     }
     
     /**
-     * Generate XML for episodes (classic RSS)
+     * Generate XML for episodes (classic RSS) with Apple Podcasts and Spotify optimization
      */
     private function generateEpisodeXml()
     {
@@ -283,24 +288,54 @@ class PodcastRSS
             $episode_url = podcastmanager::getShowUrl($item, $this->baseurl);
             $file_url = $this->track_url . $item['file_url'];
             $file_duration = $item['runtime'];
-            $file_description = "<![CDATA[" . nl2br(html_entity_decode(strip_tags(htmlspecialchars_decode(podcastmanager::urlFeedConvert($item['description'])) . " \n\n\n" . $this->config['feed_item_additions']))) . "]]>";
+            
+            // Improved description with proper HTML/link handling
+            $file_description_text = podcastmanager::urlFeedConvert($item['description']) . " \n\n\n" . $this->config['feed_item_additions'];
+            $file_description = "<![CDATA[" . nl2br(htmlspecialchars($file_description_text)) . "]]>";
+            
             $file_date = date(DateTime::RFC2822, strtotime($item['date_rfc']));
             
+            $file_size = 0;
             if (is_object(rex_media::get($item['audiofiles']))) {
                 $file_size = rex_media::get($item['audiofiles'])->getSize();
+            }
+            
+            // Format duration for iTunes (HH:MM:SS)
+            $formatted_duration = $file_duration;
+            if (is_numeric($file_duration)) {
+                $seconds = (int)$file_duration;
+                $hours = floor($seconds / 3600);
+                $minutes = floor(($seconds % 3600) / 60);
+                $secs = $seconds % 60;
+                $formatted_duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $secs);
+            }
+            
+            // Get episode image if available, otherwise use podcast image
+            $episode_image = $this->config['feed_image'];
+            if (!empty($item['images'])) {
+                $images = explode(',', $item['images']);
+                if (!empty($images[0])) {
+                    $episode_image = $this->baseurl . rex_url::media($images[0]);
+                }
             }
             
             $xml .= '<item>' . PHP_EOL;
             $xml .= '<title>' . $episode_number . $episode_title . '</title>' . PHP_EOL;
             $xml .= '<description>' . $file_description . '</description>' . PHP_EOL;
-            $xml .= '<guid isPermaLink="true">' . $episode_url . '</guid>' . PHP_EOL;
-            $xml .= '<comments>' . $episode_url . '</comments>' . PHP_EOL;
+            $xml .= '<guid isPermaLink="true">' . htmlspecialchars($episode_url) . '</guid>' . PHP_EOL;
+            $xml .= '<comments>' . htmlspecialchars($episode_url) . '</comments>' . PHP_EOL;
             $xml .= '<pubDate>' . $file_date . '</pubDate>' . PHP_EOL;
             $xml .= '<dcterms:created>' . date("Y-m-d", strtotime($item['date_rfc'])) . '</dcterms:created>' . PHP_EOL;
-            $xml .= '<link>' . $episode_url . '</link>' . PHP_EOL;
-            $xml .= '<enclosure url="' . $file_url . '" length="' . $file_size . '" type="audio/mpeg" />' . PHP_EOL;
-            $xml .= '<itunes:duration>' . $file_duration . '</itunes:duration>' . PHP_EOL;
-            $xml .= '<itunes:image href="' . $this->config['feed_image'] . '"></itunes:image>' . PHP_EOL;
+            $xml .= '<link>' . htmlspecialchars($episode_url) . '</link>' . PHP_EOL;
+            $xml .= '<enclosure url="' . htmlspecialchars($file_url) . '" length="' . $file_size . '" type="audio/mpeg" />' . PHP_EOL;
+            
+            // iTunes-specific tags (required for Apple Podcasts)
+            $xml .= '<itunes:duration>' . htmlspecialchars($formatted_duration) . '</itunes:duration>' . PHP_EOL;
+            $xml .= '<itunes:episodeType>full</itunes:episodeType>' . PHP_EOL; // Apple Podcasts 2025 requirement
+            if (is_numeric($item['number'])) {
+                $xml .= '<itunes:episode>' . (int)$item['number'] . '</itunes:episode>' . PHP_EOL;
+            }
+            $xml .= '<itunes:image href="' . htmlspecialchars($episode_image) . '"></itunes:image>' . PHP_EOL;
             $xml .= '<itunes:explicit>' . htmlspecialchars($this->config['feed_explicit']) . '</itunes:explicit>' . PHP_EOL;
             $xml .= '<itunes:summary>' . $file_description . '</itunes:summary>' . PHP_EOL;
             $xml .= '<itunes:subtitle>' . $episode_subtitle . '</itunes:subtitle>' . PHP_EOL;
@@ -320,8 +355,17 @@ class PodcastRSS
     {
         $limit = $this->config['feed_limit'];
         
-        $sql = 'SELECT * FROM rex_podcastmanager 
+        // Publication date filter: Only show episodes with publish date in the past or today
+        $today = date('d.m.Y');
+        $dateFilter = 'AND (
+            publishdate = "" OR 
+            publishdate IS NULL OR 
+            STR_TO_DATE(publishdate, "%d.%m.%Y") <= STR_TO_DATE("' . $today . '", "%d.%m.%Y")
+        )';
+        
+        $sql = 'SELECT * FROM ' . rex::getTable('podcastmanager') . ' 
                 WHERE (`status` = 1) 
+                ' . $dateFilter . '
                 ORDER BY STR_TO_DATE(publishdate, "%d.%m.%Y") DESC ' . $limit;
         
         return rex_sql::factory()->getArray($sql);

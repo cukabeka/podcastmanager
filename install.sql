@@ -17,9 +17,11 @@ CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager` (
     `title` varchar(255) NOT NULL DEFAULT '',
     `subtitle` varchar(255) NOT NULL DEFAULT '',
     `runtime` varchar(255) NOT NULL DEFAULT '',
+    `description` text,
     `richtext` text,
     `images` text,
     `audiofiles` text,
+    `publishdate` varchar(255) NOT NULL DEFAULT '',
     `seo_description` varchar(255) NOT NULL DEFAULT '',
     `seo_canonical` varchar(255) DEFAULT NULL,
     `clang_id` int(10) DEFAULT NULL,
@@ -28,8 +30,9 @@ CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager` (
     `createdate` datetime NOT NULL,
     `updateuser` varchar(255) NOT NULL,
     `updatedate` datetime NOT NULL,
-    PRIMARY KEY  (`pid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
+    PRIMARY KEY  (`pid`),
+    KEY `status_publishdate` (`status`, `publishdate`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager_categories` (
     `pid` int(10) unsigned NOT NULL auto_increment,
@@ -41,4 +44,4 @@ CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%podcastmanager_categories` (
     `updateuser` varchar(255) NOT NULL,
     `updatedate` datetime NOT NULL,
     PRIMARY KEY  (`pid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
