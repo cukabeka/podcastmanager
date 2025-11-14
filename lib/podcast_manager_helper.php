@@ -203,7 +203,7 @@ class podcastmanager
         $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['publishdate']));
         $item['updatedate'] = (strtotime($item['date']));
         if ($item['number']!="") {
-            $item['number'] = str_pad($item['number'], 3, "0", STR_PAD_LEFT);
+            $item['number'] = str_pad($item['number'], 3, "0", STR_PAD_LEFT); #passt Zahlen auf das Format 00X an
         }
         #dump($item);
         if (empty($item['filesize']) AND !empty($item['audiofiles'])) {
@@ -216,9 +216,10 @@ class podcastmanager
         $item['episode_url'] = podcastmanager::getShowUrl($item, $baseurl);
         
         // Initialize getID3 engine
-        $getID3 = new getID3;
-        $item['length'] = $getID3->analyze(rex_path::media().$item['audiofiles']);
-
+        if(class_exists('getID3')){
+            $getID3 = new getID3;
+            $item['length'] = $getID3->analyze(rex_path::media().$item['audiofiles']);
+        }
         return $item;
     }
 
