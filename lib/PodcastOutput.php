@@ -323,6 +323,69 @@ class PodcastOutput
             return '';
         }
         
+        // Check if vidstack addon is available (preferred)
+        if (rex_addon::exists('vidstack') && rex_addon::get('vidstack')->isAvailable()) {
+            return $this->renderVidstackPlayer($item);
+        }
+        
+        // Fallback to plyr/video addon
+        if (class_exists('rex_video')) {
+            return $this->renderPlyrPlayer($item);
+        }
+        
+        // Final fallback: HTML5 audio element
+        return $this->renderHtml5Player($item);
+    }
+    
+    /**
+     * Render player using vidstack addon
+     * 
+     * @param array $item Episode data
+     * @return string HTML
+     */
+    private function renderVidstackPlayer($item)
+    {
+        try {
+            $video = new \FriendsOfRedaxo\VidStack\Video($item['audiofiles'], $item['title']);
+            
+            // Set audio-specific attributes
+            $video->setAttributes([
+                'controls' => true,
+                'preload' => 'metadata',
+                'class' => 'podcast-audio-player'
+            ]);
+            
+            // Add accessibility content
+            if (!empty($item['description'])) {
+                $description = strip_tags($item['description']);
+                $description = substr($description, 0, 200);
+                $video->setA11yContent($description, $item['episode_url']);
+            }
+            
+            // Add poster image if available
+            if (!empty($item['images'])) {
+                $images = explode(',', $item['images']);
+                if (!empty($images[0])) {
+                    $posterUrl = rex_url::base(rex_url::media($images[0]));
+                    $video->setPoster($posterUrl, $item['title']);
+                }
+            }
+            
+            return '<section class="player">' . $video->generate() . '</section>';
+        } catch (Exception $e) {
+            // Fallback to HTML5 if vidstack fails
+            return $this->renderHtml5Player($item);
+        }
+    }
+    
+    /**
+     * Render player using plyr/video addon (legacy)
+     * 
+     * @param array $item Episode data
+     * @return string HTML
+     */
+    private function renderPlyrPlayer($item)
+    {
         $plyr = new rex_video();
         $autoplayStandard = rex_config::get('video', 'autoplay_plyr');
         $hideControls = rex_config::get('video', 'controls_plyr');
@@ -331,8 +394,8 @@ class PodcastOutput
         
         if ($plyr->checkAudio($item['audiofiles']) !== false) {
             $html = '<section class="player">';
-            $html .= '<audio preload="none" class="rex_video" ' . $autoplayStandard . '>';
-            $html .= '<source src="' . $this->baseurl . $link . '" type="audio/mp3">';
+            $html .= '<audio preload="metadata" class="rex_video" ' . $autoplayStandard . '>';
+            $html .= '<source src="' . $this->baseurl . $link . '" type="audio/mpeg">';
             $html .= '</audio>';
             $html .= '</section>';
             
@@ -340,6 +403,30 @@ class PodcastOutput
         }
         
         return '';
+    }
+    
+    /**
+     * Render HTML5 audio player (fallback)
+     * 
+     * @param array $item Episode data
+     * @return string HTML
+     */
+    private function renderHtml5Player($item)
+    {
+        if (empty($item['audiofiles'])) {
+            return '';
+        }
+        
+        $audioUrl = $this->baseurl . rex_url::media() . $item['audiofiles'];
+        
+        $html = '<section class="player">';
+        $html .= '<audio controls preload="metadata" class="podcast-audio-player">';
+        $html .= '<source src="' . htmlspecialchars($audioUrl) . '" type="audio/mpeg">';
+        $html .= 'Your browser does not support the audio element.';
+        $html .= '</audio>';
+        $html .= '</section>';
+        
+        return $html;
     }
     
     /**
