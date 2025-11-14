@@ -38,4 +38,4 @@ requires:
         #yform: '>=2.2' # setzt yform ab v 2.2 voraus
         #statistics: '>=1' # das statistics addon für download-tracking
     php:
-        version: '>=5.6' # benötigt mindestens PHP 5.6
+        version: '>=5.6,<8.5' # PHP 5.6 bis 8.4

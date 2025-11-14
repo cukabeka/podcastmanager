@@ -23,10 +23,18 @@ class PodcastRSS
     private $track_url = '';
     
     /**
-     * Constructor
+     * Description format: 'text', 'markdown', 'html'
      */
-    public function __construct()
+    private $descriptionFormat = 'text';
+    
+    /**
+     * Constructor
+     * 
+     * @param string $descriptionFormat Format for episode descriptions: 'text', 'markdown', 'html'
+     */
+    public function __construct($descriptionFormat = 'text')
     {
+        $this->descriptionFormat = $descriptionFormat;
         $this->baseurl = $this->getBaseUrl();
         $this->track_url = $this->getTrackingUrl();
         $this->loadConfiguration();
@@ -289,8 +297,10 @@ class PodcastRSS
             $file_url = $this->track_url . $item['file_url'];
             $file_duration = $item['runtime'];
             
-            // Improved description with proper HTML/link handling
-            $file_description_text = podcastmanager::urlFeedConvert($item['description']) . " \n\n\n" . $this->config['feed_item_additions'];
+            // Improved description with format support (text, markdown, html)
+            $file_description_text = podcastmanager::urlFeedConvert($item['description'], $this->descriptionFormat) . " \n\n\n" . $this->config['feed_item_additions'];
+            
+            // Wrap in CDATA for safety
             $file_description = "<![CDATA[" . nl2br(htmlspecialchars($file_description_text)) . "]]>";
             
             $file_date = date(DateTime::RFC2822, strtotime($item['date_rfc']));

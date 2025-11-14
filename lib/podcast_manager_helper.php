@@ -72,8 +72,16 @@ class podcastmanager
         return $url;
     }
 
-    public static function urlFeedConvert($str)
+    public static function urlFeedConvert($str, $format = 'text')
     {
+        /**
+         * Convert HTML description to RSS-friendly format
+         * 
+         * @param string $str HTML content
+         * @param string $format Output format: 'text', 'markdown', 'html'
+         * @return string Converted content
+         */
+        
         // Process xoutputfilter replacements if addon is available
         if (rex_addon::exists('xoutputfilter') && rex_addon::get('xoutputfilter')->isAvailable()) {
             try {
@@ -83,22 +91,45 @@ class podcastmanager
             }
         }
 
-        // Convert HTML to more readable format for RSS feeds
-        // Replace <br> and <p> tags with line breaks
-        $str = str_replace(['<br>', '<br/>', '<br />', '</p>'], "\n", $str);
-        $str = str_replace('<p>', "\n\n", $str);
-        
-        // Convert links to readable format: Link text (URL)
-        $str = preg_replace('/<a[^>]+href=["\']([^"\']+)["\'][^>]*>([^<]+)<\/a>/i', '$2 ($1)', $str);
-        
-        // Remove remaining HTML tags but keep the content
-        $str = strip_tags($str);
-        
-        // Clean up extra whitespace
-        $str = preg_replace('/\n{3,}/', "\n\n", $str);
-        $str = trim($str);
-
-        return $str;
+        // Return based on format
+        switch ($format) {
+            case 'markdown':
+                // Convert HTML to Markdown using markdownify library
+                try {
+                    $converter = new Markdownify\Converter();
+                    $markdown = $converter->parseString($str);
+                    return trim($markdown);
+                } catch (Exception $e) {
+                    // Fallback to text if markdownify fails
+                    return self::urlFeedConvert($str, 'text');
+                }
+                break;
+                
+            case 'html':
+                // Return cleaned HTML (remove dangerous tags but keep structure)
+                $str = strip_tags($str, '<a><p><br><strong><em><ul><ol><li><h1><h2><h3><h4><h5><h6>');
+                return trim($str);
+                break;
+                
+            case 'text':
+            default:
+                // Convert HTML to plain text (original behavior)
+                // Replace <br> and <p> tags with line breaks
+                $str = str_replace(['<br>', '<br/>', '<br />', '</p>'], "\n", $str);
+                $str = str_replace('<p>', "\n\n", $str);
+                
+                // Convert links to readable format: Link text (URL)
+                $str = preg_replace('/<a[^>]+href=["\']([^"\']+)["\'][^>]*>([^<]+)<\/a>/i', '$2 ($1)', $str);
+                
+                // Remove remaining HTML tags but keep the content
+                $str = strip_tags($str);
+                
+                // Clean up extra whitespace
+                $str = preg_replace('/\n{3,}/', "\n\n", $str);
+                $str = trim($str);
+                
+                return $str;
+        }
     }
     /**
  * Function: sanitize
@@ -159,14 +190,17 @@ class podcastmanager
         $item['file_link'] = podcastmanager::getTrackingUrl($item, rex_config::get('podcastmanager', 'detail_id'), $baseurl);
         $item['audiofiles'] = trim($item['audiofiles']);
         
-        // Handle publish date
+        // Handle publish date - PHP 8.4 compatible (replaced strftime)
         if (!empty($item['publishdate'])) {
-            $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['publishdate']));
-            $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['publishdate']));
+            $timestamp = strtotime($item['publishdate']);
+            $item['date_rfc'] = date(DateTime::RFC2822, $timestamp);
+            // Format: dd.mm.yy (e.g., 14.01.25) - PHP 8.4 compatible
+            $item['publishdate'] = date('d.m.y', $timestamp);
         } else {
             // Fallback to creation date if no publish date
-            $item['date_rfc'] = date(DateTime::RFC2822, strtotime($item['createdate']));
-            $item['publishdate'] = strftime("%d.%m.%y", strtotime($item['createdate']));
+            $timestamp = strtotime($item['createdate']);
+            $item['date_rfc'] = date(DateTime::RFC2822, $timestamp);
+            $item['publishdate'] = date('d.m.y', $timestamp);
         }
         
         $item['updatedate'] = (strtotime($item['updatedate']));

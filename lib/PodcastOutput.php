@@ -19,6 +19,11 @@ class PodcastOutput
     private $baseurl = '';
     
     /**
+     * Current episode data (for detail view)
+     */
+    private $currentEpisode = null;
+    
+    /**
      * Constructor
      * 
      * @param array $config Configuration array
@@ -45,6 +50,7 @@ class PodcastOutput
             'detail_id' => rex_config::get('podcastmanager', 'detail_id'),
             'order' => 'DESC',
             'category' => '',               // Filter by category ID
+            'seo_enabled' => true,          // Enable SEO tags in detail view
         ];
     }
     
