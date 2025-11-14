@@ -545,19 +545,17 @@ class getID3
 				}
 			}
 
-			// ID3v2 detection (NOT parsing), even if ($this->option_tag_id3v2 == false) done to make fileformat easier
-			if (!$this->option_tag_id3v2) {
-				fseek($this->fp, 0);
-				$header = fread($this->fp, 10);
-				if ((substr($header, 0, 3) == 'ID3') && (strlen($header) == 10)) {
-					$this->info['id3v2']['header']        = true;
-					$this->info['id3v2']['majorversion']  = ord($header{3});
-					$this->info['id3v2']['minorversion']  = ord($header{4});
-					$this->info['avdataoffset']          += getid3_lib::BigEndian2Int(substr($header, 6, 4), 1) + 10; // length of ID3v2 tag in 10-byte header doesn't include 10-byte header length
-				}
+		// ID3v2 detection (NOT parsing), even if ($this->option_tag_id3v2 == false) done to make fileformat easier
+		if (!$this->option_tag_id3v2) {
+			fseek($this->fp, 0);
+			$header = fread($this->fp, 10);
+			if ((substr($header, 0, 3) == 'ID3') && (strlen($header) == 10)) {
+				$this->info['id3v2']['header']        = true;
+				$this->info['id3v2']['majorversion']  = ord($header[3]);
+				$this->info['id3v2']['minorversion']  = ord($header[4]);
+				$this->info['avdataoffset']          += getid3_lib::BigEndian2Int(substr($header, 6, 4), 1) + 10; // length of ID3v2 tag in 10-byte header doesn't include 10-byte header length
 			}
-
-			// read 32 kb file data
+		}			// read 32 kb file data
 			fseek($this->fp, $this->info['avdataoffset']);
 			$formattest = fread($this->fp, 32774);
 
